@@ -15,6 +15,7 @@ const GAME_WIDTH = 1280;
 const GAME_HEIGHT = 720;
 
 const INITIAL_STATE: GameState = {
+  week: 1,
   day: 1,
   step: 1,
   companyContribution: 50,
@@ -193,7 +194,7 @@ export function GameBoard() {
           "まずはメールのチェックから始める",
           "同僚に挨拶をして回る"
         ],
-        sceneText: `DAY ${prev.day + 1} - 業務開始\n新しい1日が始まった。今日はどんな問題が起きるのだろうか。`
+        sceneText: `WEEK ${prev.week} / DAY ${prev.day + 1} - 業務開始\n新しい1日が始まった。今日はどんなトラブルが起きるのだろうか。`
       }));
       setIsTransitioning(false);
     }, 2000);
@@ -279,15 +280,16 @@ export function GameBoard() {
     setTimeout(() => {
       setGameState(prev => ({
         ...prev,
+        week: prev.week + 1,
         day: 1,
         step: 1,
         dailyHistory: [],
         currentOptions: [
-          "本日の業務タスクを確認する",
+          "今週の業務タスクを確認する",
           "まずはメールのチェックから始める",
-          "同僚に挨拶をして回る"
+          "牽制として関係部署に挨拶をして回る"
         ],
-        sceneText: `DAY 1 - 新たな週の始まり\n週末の裏工作を終え、また戦場へと戻ってきた。`
+        sceneText: `WEEK ${prev.week + 1} - 新たな週の始まり\n週末の裏工作を終え、また戦場へと戻ってきた。油断すれば一瞬で切り捨てられる。`
       }));
       setScreenState('GAME');
       setIsTransitioning(false);
@@ -304,14 +306,16 @@ export function GameBoard() {
 
   const handleRetry = () => {
     playSynthSE('action');
-    // メタプログレッション: unlockedSecrets、レベル、経験値はリセットしない
+    // メタプログレッション: unlockedSecrets、レベル、経験値はリセットしない。
+    // week, day, step, inventory, 好感度, companyContribution等は INITIAL_STATE にリセットされる
     setGameState(prev => ({
       ...INITIAL_STATE,
       playerLevel: prev.playerLevel,
       playerExp: prev.playerExp
     }));
     setInventory([]);
-    setScreenState('GAME');
+    setTitleOpacity(1);
+    setScreenState('TITLE');
   };
 
   return (
@@ -710,28 +714,35 @@ export function GameBoard() {
 
         {/* ---------------- GAME OVER UI ---------------- */}
         {screenState === 'GAME_OVER' && (
-          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-red-900/90 backdrop-blur-sm pointer-events-auto">
-            <h1 className="text-9xl font-black text-red-500 tracking-[0.2em] mb-4 drop-shadow-[0_0_20px_rgba(255,0,0,0.8)]">
-              解雇通知
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-red-950/95 backdrop-blur-md pointer-events-auto">
+            <h1 className="text-9xl font-black text-red-600 tracking-[0.2em] mb-4 drop-shadow-[0_0_30px_rgba(220,38,38,1)]">
+              FIRED
             </h1>
-            <p className="text-2xl text-red-200 tracking-widest mb-16">会社への貢献度が尽きました。あなたは解雇されました。</p>
+            <p className="text-2xl text-red-300 tracking-widest mb-16 font-serif">あなたは WEEK {gameState.week} まで生き延びましたが、ついに切り捨てられました。</p>
             
             {unlockedSecrets.length > 0 && (
-              <div className="mb-12 bg-black/50 p-6 rounded-xl border border-red-500/50 max-w-2xl text-center">
+              <div className="mb-12 bg-black/60 p-6 rounded-xl border border-red-500/50 max-w-2xl text-center shadow-2xl">
                 <h3 className="text-red-400 font-bold mb-4 tracking-widest">しかし、あなたは以下の弱みを握っている...</h3>
                 <ul className="text-gray-300 text-sm space-y-2">
-                  {unlockedSecrets.map((sec, i) => (
-                    <li key={i}>・{sec}</li>
-                  ))}
+                  {unlockedSecrets.map((sec, i) => {
+                    // sec は IDなので本当は表示テキストにするべきだが、
+                    // 前回の実装でここは ID のままになっていたので、一旦そのままか、
+                    // マスターデータからタイトルを引くようにする
+                    const secretData = SECRETS_DATA['shinonome'].find(s => s.id === sec) || 
+                                       SECRETS_DATA['hoshino'].find(s => s.id === sec) ||
+                                       SECRETS_DATA['kirishima'].find(s => s.id === sec) ||
+                                       SECRETS_DATA['jinguji'].find(s => s.id === sec);
+                    return <li key={i}>・{secretData ? secretData.title : sec}</li>;
+                  })}
                 </ul>
               </div>
             )}
 
             <button 
               onClick={handleRetry}
-              className="px-12 py-4 bg-red-600 hover:bg-red-500 text-white font-bold tracking-[0.2em] text-2xl rounded-full transition-all shadow-[0_0_20px_rgba(255,0,0,0.4)] hover:shadow-[0_0_40px_rgba(255,0,0,0.8)]"
+              className="px-12 py-4 bg-red-800 hover:bg-red-700 text-red-100 border border-red-500 font-bold tracking-[0.2em] text-xl rounded-full transition-all shadow-[0_0_20px_rgba(255,0,0,0.3)] hover:shadow-[0_0_40px_rgba(255,0,0,0.6)]"
             >
-              記憶を引き継いで次のループへ
+              記憶を引き継いで再就職する
             </button>
           </div>
         )}
@@ -809,11 +820,16 @@ export function GameBoard() {
         
         {/* 出社トランジション・オーバーレイ */}
         <div 
-          className={`absolute inset-0 bg-black z-50 flex items-center justify-center transition-opacity duration-1000 ${
+          className={`absolute inset-0 bg-black z-50 flex flex-col items-center justify-center transition-opacity duration-1000 ${
             isTransitioning ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
           }`}
         >
-          <h1 className="text-white text-5xl font-bold tracking-widest">DAY {gameState.day + (isTransitioning ? 1 : 0)} - 業務開始</h1>
+          <h1 className="text-white text-5xl font-bold tracking-widest mb-4">
+            WEEK {gameState.day === 5 ? gameState.week + 1 : gameState.week} 
+          </h1>
+          <h2 className="text-gray-300 text-3xl font-bold tracking-widest">
+            DAY {gameState.day === 5 ? 1 : gameState.day + (isTransitioning ? 1 : 0)} - 業務開始
+          </h2>
         </div>
 
       </div>

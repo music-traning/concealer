@@ -18,7 +18,9 @@ export function StatusHud({ state }: StatusHudProps) {
             <span className="font-bold text-base text-yellow-400 ml-1">{state.playerLevel}</span>
           </div>
           <div>
-            <span className="text-[10px] text-gray-400">DAY </span>
+            <span className="text-[10px] text-gray-400">WEEK </span>
+            <span className="font-bold text-base text-green-400 ml-1">{state.week}</span>
+            <span className="text-[10px] text-gray-400 ml-2">DAY </span>
             <span className="font-bold text-base text-purple-400 ml-1">{state.day}</span>
             <span className="text-[10px] text-gray-400 ml-2">STEP </span>
             <span className="font-bold text-base text-purple-400 ml-1">{state.step}</span>

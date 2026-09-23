@@ -16,6 +16,7 @@ export interface ChatMessage {
 export type BgId = 'conference_room' | 'hot_water_room' | 'night_office' | 'office';
 
 export interface GameState {
+  week: number;
   day: number; // 1 to 5
   step: number; // 1 to 5
   companyContribution: number;
