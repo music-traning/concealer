@@ -164,6 +164,7 @@ export function GameBoard() {
         }
 
         return {
+          ...prev,
           day: nextDay,
           step: nextStep,
           companyContribution: nextCompanyContribution,
@@ -924,7 +925,6 @@ export function GameBoard() {
         </div>
       )}
 
-    </div>
     </div>
   );
 }
