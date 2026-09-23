@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenAI, Type, Schema } from '@google/genai';
+import { GoogleGenAI, Type, Schema, HarmCategory, HarmBlockThreshold } from '@google/genai';
 import { TurnRequestPayload, TurnResponsePayload } from '@/lib/types';
 import { SECRETS_DATA } from '@/constants/secrets';
 
@@ -59,7 +59,7 @@ const responseSchema: Schema = {
 export async function POST(req: Request) {
   try {
     const body: TurnRequestPayload = await req.json();
-    const { action, state, unlockedSecrets, usedItem } = body;
+    const { action, state, unlockedSecrets = [], usedItem } = body;
 
     const resolvedSecretsList = unlockedSecrets.map((id: string) => {
       for (const charId in SECRETS_DATA) {
@@ -137,10 +137,10 @@ ${state.step >= 5 ? '\n- 【重要】このターンで本日の交渉は終了�
           responseSchema: responseSchema,
           temperature: 0.7,
           safetySettings: [
-            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
+            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE }
           ]
         },
       });

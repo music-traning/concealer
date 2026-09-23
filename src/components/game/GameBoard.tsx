@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { GameState, TurnResponsePayload } from '@/lib/types';
+import { GameState, TurnResponsePayload, CharacterId, Item, ChatMessage } from '@/lib/types';
 import { StatusHud } from './StatusHud';
 import { CharacterView } from './CharacterView';
 import { ActionPanel } from './ActionPanel';
@@ -123,7 +123,7 @@ export function GameBoard() {
           ...prev.dailyHistory,
           { role: 'user', content: actionText },
           { role: 'system', content: data.text }
-        ] as const;
+        ] as ChatMessage[];
 
         const newCharacters = { ...prev.characters };
         (['shinonome', 'hoshino', 'kirishima', 'jinguji'] as const).forEach(id => {
@@ -220,7 +220,7 @@ export function GameBoard() {
           ...prev.dailyHistory,
           { role: 'user', content: actionText },
           { role: 'system', content: data.text }
-        ] as const;
+        ] as ChatMessage[];
 
         return {
           ...prev,
