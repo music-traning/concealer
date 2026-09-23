@@ -13,17 +13,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://concealer-six.vercel.app"),
   title: "CONCEALER - 嘘と秘密の社内政治ローグライク",
   description: "絶体絶命のブラック企業を生き抜くAI対話型サバイバル。同僚の秘密（弱み）を収集し、会話で突きつけて絶対的な権力者たちを屈服させろ。レトロな8ビットテイストと哲学的なテキストが彩る、冷酷な企業メタプログレッション。",
   authors: [{ name: "United Make Associates", url: "https://note.com/jazzy_begin" }],
   openGraph: {
     title: "CONCEALER - 嘘と秘密の社内政治ローグライク",
     description: "絶体絶命のブラック企業を生き抜くAI対話型サバイバル。同僚の秘密（弱み）を収集し、会話で突きつけて絶対的な権力者たちを屈服させろ。",
-    url: "https://concealer-game.vercel.app", // デプロイ先URLを仮設定
+    url: "https://concealer-six.vercel.app",
     siteName: "CONCEALER",
     images: [
       {
-        url: "/icon.jpg",
+        url: "/ogp.jpg",
         width: 1200,
         height: 630,
         alt: "CONCEALER プロモーション画像",
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "CONCEALER - 嘘と秘密の社内政治ローグライク",
     description: "同僚の秘密（弱み）を収集し、AIとの会話で突きつけて権力者たちを屈服させろ。レトロな8ビットテイストの企業サバイバル。",
-    images: ["/icon.jpg"],
+    images: ["/ogp.jpg"],
   },
 };
 
