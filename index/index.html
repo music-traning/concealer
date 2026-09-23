@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>化粧品会社シミュレーション UIプロトタイプ</title>
+<style>
+  body { 
+    margin: 0; padding: 0; background-color: #222; 
+    display: flex; justify-content: center; align-items: center; 
+    height: 100vh; font-family: 'Helvetica Neue', Arial, sans-serif; 
+  }
+  #game-container { 
+    position: relative; width: 100%; max-width: 800px; height: 100vh; max-height: 450px; 
+    /* 背景画像のダミー（オフィス風） */
+    background: url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800') center/cover; 
+    overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5); 
+  }
+  
+  /* キャラクター立ち絵ダミー */
+  .character { 
+    position: absolute; bottom: 0; left: 5%; height: 85%; z-index: 2; 
+    /* 切り抜いた画像のサイズ (340x600) の比率を保持 */
+    aspect-ratio: 340 / 600;
+    background: url('png/queen/normal.png') no-repeat center bottom / contain; 
+    filter: drop-shadow(5px 5px 10px rgba(0,0,0,0.3));
+  }
+
+  /* 3. ステータスHUD */
+  .status-hud { 
+    position: absolute; top: 15px; right: 15px; z-index: 3; 
+    background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; color: white; font-size: 12px; 
+  }
+  .status-hud div { margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; width: 160px; }
+  .bar-bg { width: 90px; height: 8px; background: #555; border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; background: #4CAF50; width: 50%; }
+
+  /* 5. アクションパネル（ハイブリッド入力） */
+  .action-panel { 
+    position: absolute; 
+    bottom: 30%; /* テキストボックスの少し上に配置 */
+    right: 5%;   /* 画面の右端に寄せる */
+    width: 50%;  /* 画面の右半分だけを使用する */
+    z-index: 5; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-end; /* ボタン類を右揃えにしてキャラから遠ざける */
+    gap: 10px; 
+  }
+  .choice-btn { 
+    background: rgba(0, 0, 0, 0.85); color: white; border: 1px solid #aaa; 
+    padding: 12px; border-radius: 8px; /* 丸みを抑えてスタイリッシュに */
+    font-size: 14px; cursor: pointer; 
+    width: 100%; /* .action-panelの幅に対して100% */
+    max-width: 400px; 
+    transition: 0.2s; 
+    text-align: center;
+  }
+  .choice-btn:hover { background: white; color: black; font-weight: bold; border-color: white;}
+  
+  .text-input-group { 
+    display: flex; gap: 8px; 
+    width: 100%; max-width: 400px; margin-top: 5px;
+  }
+  .text-input-group input { 
+    flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #999; 
+    font-size: 14px; background: rgba(255,255,255,0.9);
+  }
+  .text-input-group button { 
+    padding: 0 20px; border-radius: 8px; border: none; 
+    background: #6a0dad; color: white; font-weight: bold; cursor: pointer; 
+  }
+  /* 4. メインテキストエリア */
+  .text-box { 
+    position: absolute; bottom: 15px; left: 5%; width: 90%; box-sizing: border-box; 
+    background: rgba(255, 255, 255, 0.85); border-radius: 15px; padding: 15px 20px; 
+    z-index: 4; border: 2px solid rgba(0,0,0,0.1); 
+  }
+  .name-tag { font-weight: bold; font-size: 18px; margin-bottom: 8px; color: #333; }
+  .message-text { font-size: 16px; line-height: 1.5; color: #111; }
+</style>
+</head>
+<body>
+<div id="game-container">
+  
+  <div class="character"></div>
+  
+  <!-- パラメータの可視化 -->
+  <div class="status-hud">
+    <div><span>東雲 (品質管理)</span><div class="bar-bg"><div class="bar-fill" style="width: 40%;"></div></div></div>
+    <div><span>星野 (PR企画)</span><div class="bar-bg"><div class="bar-fill" style="width: 70%;"></div></div></div>
+    <div><span>会社貢献度</span><div class="bar-bg"><div class="bar-fill" style="background: #FFC107; width: 60%;"></div></div></div>
+  </div>
+
+  <!-- 行動選択と自由入力 -->
+  <div class="action-panel">
+    <button class="choice-btn">論理的にルールの正当性を主張する</button>
+    <button class="choice-btn">相手のメンツを立てて引き下がる</button>
+    <div class="text-input-group">
+      <input type="text" placeholder="決定的な一言を添える (空欄可)..." />
+      <button>発言</button>
+    </div>
+  </div>
+
+  <!-- サウンドノベル風テキストボックス -->
+  <div class="text-box">
+    <div class="name-tag">東雲</div>
+    <div class="message-text">
+      品質管理部の東雲先輩。厳しいけれど、筋を通せば話を聞いてくれるはずだ。<br>
+      （大人のコミュ力で攻略する、化粧品会社の人間関係シミュレーション）
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
