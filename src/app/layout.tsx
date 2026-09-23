@@ -39,6 +39,9 @@ export const metadata: Metadata = {
     description: "同僚の秘密（弱み）を収集し、AIとの会話で突きつけて権力者たちを屈服させろ。レトロな8ビットテイストの企業サバイバル。",
     images: ["/ogp.jpg"],
   },
+  icons: {
+    icon: "/favicon.jpg",
+  },
 };
 
 import { Analytics } from "@vercel/analytics/react"
