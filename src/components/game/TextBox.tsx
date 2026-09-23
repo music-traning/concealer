@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
 interface TextBoxProps {
-  text: string;
+  text: React.ReactNode;
 }
 
 export function TextBox({ text }: TextBoxProps) {

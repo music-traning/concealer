@@ -56,6 +56,18 @@ export function GameBoard() {
   const [dbSelectedTab, setDbSelectedTab] = useState<CharacterId>('shinonome');
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [selectedItemForNextTurn, setSelectedItemForNextTurn] = useState<Item | null>(null);
+
+  type ToastType = 'info' | 'error' | 'success';
+  const [toastMessages, setToastMessages] = useState<{id: number, text: string, type: ToastType}[]>([]);
+  const addToast = (text: string, type: ToastType = 'info') => {
+    const id = Date.now() + Math.random();
+    setToastMessages(prev => [...prev, { id, text, type }]);
+    setTimeout(() => {
+      setToastMessages(prev => prev.filter(msg => msg.id !== id));
+    }, 4000);
+  };
+
+  const [confirmDialog, setConfirmDialog] = useState<{ message: string, onConfirm: () => void } | null>(null);
   
   // titleOpacity: タイトル画面全体の不透明度 (START時に0になる)
   const [titleOpacity, setTitleOpacity] = useState(1);
@@ -168,7 +180,7 @@ export function GameBoard() {
 
     } catch (error: any) {
       console.error("Game Action Error:", error);
-      alert(`エラーが発生しました。\n${error.message}`);
+      addToast(`エラーが発生しました: ${error.message}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -241,10 +253,10 @@ export function GameBoard() {
           // ランダムに1つ選ぶ
           const randomSecret = lockedSecrets[Math.floor(Math.random() * lockedSecrets.length)];
           setUnlockedSecrets(prev => [...prev, randomSecret.id]);
-          alert(`【SECRET UNLOCKED】\n${gameState.characters[targetNpc].name}の秘密\n『${randomSecret.title}』を獲得した！`);
+          addToast(`【SECRET UNLOCKED】\n${gameState.characters[targetNpc].name}の秘密\n『${randomSecret.title}』を獲得した！`, 'success');
         } else {
-          // 全て取得済みの場合は汎用テキストなど（今回は何もしないか、テキストを出す）
-          alert(`【SECRET UNLOCKED】\nこれ以上、新しい秘密は引き出せなかったようだ…`);
+          // 全て取得済みの場合は汎用テキストなど
+          addToast(`これ以上、新しい秘密は引き出せなかったようだ…`, 'info');
         }
       }
       
@@ -252,11 +264,11 @@ export function GameBoard() {
         // AIが生成したアイテムを破棄し、マスターデータからランダムに取得
         const randomItem = ITEMS_DATA[Math.floor(Math.random() * ITEMS_DATA.length)];
         setInventory(prev => [...prev, randomItem]);
-        alert(`【ITEM GET】\n『${randomItem.name}』を獲得した！`);
+        addToast(`【ITEM GET】\n『${randomItem.name}』を獲得した！`, 'success');
       }
     } catch (error: any) {
       console.error(error);
-      alert('エラーが発生しました');
+      addToast('通信エラーが発生しました。時間を置いてお試しください。', 'error');
     } finally {
       setLoading(false);
     }
@@ -452,7 +464,7 @@ export function GameBoard() {
                     onClick={() => {
                       playSynthSE('action');
                       if (saveGame(idx, gameState, unlockedSecrets, inventory)) {
-                        alert('セーブしました。');
+                        addToast('セーブしました。', 'success');
                         setShowSaveModal(false);
                       }
                     }}
@@ -472,7 +484,13 @@ export function GameBoard() {
                     <button
                       onClick={() => {
                         playSynthSE('click');
-                        if (confirm('このデータを削除しますか？')) clearSave(idx);
+                        setConfirmDialog({
+                          message: 'このデータを削除しますか？',
+                          onConfirm: () => {
+                            clearSave(idx);
+                            addToast('データを削除しました。', 'info');
+                          }
+                        });
                       }}
                       className="px-3 md:px-4 bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-700/50 rounded-xl transition-colors text-xs md:text-sm font-bold"
                     >
@@ -512,6 +530,7 @@ export function GameBoard() {
                       setUnlockedSecrets(save.unlockedSecrets);
                       setInventory(save.inventory);
                       setShowLoadModal(false);
+                      addToast('ロードしました。', 'success');
                       if (screenState === 'TITLE') {
                         setTitleOpacity(0);
                         setTimeout(() => setScreenState('GAME'), 1500);
@@ -537,7 +556,13 @@ export function GameBoard() {
                     <button
                       onClick={() => {
                         playSynthSE('click');
-                        if (confirm('このデータを削除しますか？')) clearSave(idx);
+                        setConfirmDialog({
+                          message: 'このデータを削除しますか？',
+                          onConfirm: () => {
+                            clearSave(idx);
+                            addToast('データを削除しました。', 'info');
+                          }
+                        });
                       }}
                       className="px-3 md:px-4 bg-red-900/50 hover:bg-red-800 text-red-200 border border-red-700/50 rounded-xl transition-colors text-xs md:text-sm font-bold"
                     >
@@ -708,7 +733,24 @@ export function GameBoard() {
                 />
               )}
             </div>
-            <TextBox text={loading ? '処理中...' : gameState.sceneText} />
+            <TextBox 
+              text={
+                loading ? (
+                  <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-3">
+                    <div className="text-xl font-mono tracking-[0.3em] flex items-center">
+                      THINKING
+                      <span className="animate-[pulse_1s_infinite] delay-75 ml-1">.</span>
+                      <span className="animate-[pulse_1s_infinite] delay-150">.</span>
+                      <span className="animate-[pulse_1s_infinite] delay-300">.</span>
+                    </div>
+                    <div className="w-1/2 h-[1px] bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
+                    <div className="text-sm tracking-widest opacity-60">相手は冷酷に次の手を計算している</div>
+                  </div>
+                ) : (
+                  gameState.sceneText
+                )
+              } 
+            />
           </>
         )}
 
@@ -790,8 +832,17 @@ export function GameBoard() {
                 ))}
                 {loading && (
                   <div className="flex justify-start">
-                    <div className="bg-slate-700 text-gray-400 p-3 rounded-2xl rounded-bl-sm animate-pulse text-sm">
-                      入力中...
+                    <div className="bg-slate-800/80 border border-slate-700 text-purple-400 px-6 py-4 rounded-2xl rounded-bl-sm shadow-[0_0_15px_rgba(168,85,247,0.15)] flex flex-col gap-2 min-w-[200px]">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono tracking-widest text-slate-500 uppercase">System</span>
+                      </div>
+                      <div className="flex items-center gap-1 font-mono text-sm tracking-widest">
+                        <span>Thinking</span>
+                        <span className="animate-[pulse_1s_infinite] delay-75">.</span>
+                        <span className="animate-[pulse_1s_infinite] delay-150">.</span>
+                        <span className="animate-[pulse_1s_infinite] delay-300">.</span>
+                        <span className="ml-1 inline-block w-2 h-4 bg-purple-500 animate-[pulse_1s_infinite]"></span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -833,6 +884,47 @@ export function GameBoard() {
         </div>
 
       </div>
+
+      {/* Toast Notifications */}
+      <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[200] flex flex-col items-center gap-3 pointer-events-none">
+        {toastMessages.map(msg => (
+          <div 
+            key={msg.id} 
+            className={`animate-fade-in-down max-w-md px-6 py-4 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-md border border-gray-700/50 flex items-center gap-3 ${
+              msg.type === 'error' ? 'bg-red-950/90 border-red-500/50 text-red-200' :
+              msg.type === 'success' ? 'bg-indigo-950/90 border-indigo-500/50 text-indigo-200' :
+              'bg-black/90 border-gray-600/50 text-gray-200'
+            }`}
+          >
+            <span className="whitespace-pre-wrap text-sm md:text-base font-bold tracking-wider">{msg.text}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Confirm Dialog */}
+      {confirmDialog && (
+        <div className="fixed inset-0 z-[200] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-red-500/50 shadow-[0_0_30px_rgba(255,0,0,0.2)] p-8 rounded-2xl max-w-md w-full animate-fade-in text-center">
+            <h3 className="text-xl text-white font-bold mb-8 tracking-widest">{confirmDialog.message}</h3>
+            <div className="flex gap-4 justify-center">
+              <button 
+                onClick={() => { playSynthSE('click'); setConfirmDialog(null); }}
+                className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-gray-300 rounded-lg transition-colors font-bold"
+              >
+                キャンセル
+              </button>
+              <button 
+                onClick={() => { playSynthSE('action'); confirmDialog.onConfirm(); setConfirmDialog(null); }}
+                className="px-8 py-3 bg-red-800 hover:bg-red-700 text-white rounded-lg transition-colors shadow-[0_0_15px_rgba(255,0,0,0.4)] font-bold"
+              >
+                実行する
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
     </div>
   );
 }
